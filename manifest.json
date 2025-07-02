@@ -1,0 +1,30 @@
+{
+    "manifest_version": 3,
+    "name": "Hash Enricher",
+    "version": "1.0",
+    "description": "Enriches file hashes using VirusTotal, AlienVault OTX, and Hybrid Analysis directly in your browser.",
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "Hash Enricher"
+    },
+    "permissions": [
+        "storage",
+        "activeTab",
+        "https://www.hybrid-analysis.com/*",
+        "background"
+    ],
+    "icons": {
+        "16": "icons/icon.png",
+        "48": "icons/icon.png",
+        "128": "icons/icon.png"
+    },
+    "host_permissions": [
+        "https://www.virustotal.com/*",
+        "https://otx.alienvault.com/*",
+        "https://www.hybrid-analysis.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js",
+        "type": "module"
+    }
+}

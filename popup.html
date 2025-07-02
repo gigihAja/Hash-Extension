@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Threat Enricher</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+  <div class="popup-container glass-effect">
+    <div class="title">
+      <i class="fas fa-shield-virus"></i>
+      Threat Hash Enricher
+    </div>
+
+    <div class="input-group">
+      <input type="text" id="hashInput" placeholder="Enter hash or IP(s)..." />
+      <button id="lookupBtn"><i class="fas fa-search"></i> Lookup</button>
+    </div>
+
+    <div class="result-section" id="vtResult">
+      <h2><i class="fas fa-virus"></i> VirusTotal</h2>
+      <div class="loading" hidden>Loading...</div>
+      <div class="content"></div>
+    </div>
+
+    <div class="result-section" id="otxResult">
+      <h2><i class="fas fa-satellite-dish"></i> AlienVault OTX</h2>
+      <div class="loading" hidden>Loading...</div>
+      <div class="content"></div>
+    </div>
+
+    <div class="result-section" id="haResult">
+      <h2><i class="fas fa-microscope"></i> Hybrid Analysis</h2>
+      <div class="loading" hidden>Loading...</div>
+      <div class="content"></div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+
+  <div id="copyAllContainer" style="text-align: right; margin-top: 1rem;" hidden>
+    <button id="copyAllBtn"
+      style="background: linear-gradient(135deg, #6d28d9, #9333ea); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 600; cursor: pointer;">
+      📋 Copy All
+    </button>
+  </div>
+
+
+
+</body>
+
+
+</html>
