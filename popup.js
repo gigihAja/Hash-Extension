@@ -1,6 +1,7 @@
 const vtKey = "c01ba790c0bdde3781b873ab29d6f349a87312e3729e2da0f56690c1c67a07e5";
 const otxKey = "c01ba790c0bdde3781b873ab29d6f349a87312e3729e2da0f56690c1c67a07e5";
-//const haKey = "vzuy4foqd2220d1enqpifi02c6fbce26pngma1p62d294bc85rpy6t0l446473b1";
+const ENCRYPTED_API_KEY = "U2FsdGVkX190tktSa1oAhdRmRMP1+Ly9Dyfzg8xkkjQzCeIZeBFv9fBmIDnHhCtkjd8cBGrneCS793dxn/NEqYuqjPPHxe1zdqSrWuxV1q5jCRrjdBO5coCnjf4ChpJa=";
+
 
 
 document.getElementById("lookupBtn").addEventListener("click", async () => {
@@ -41,6 +42,7 @@ document.getElementById("lookupBtn").addEventListener("click", async () => {
     await lookupVirusTotal(input);
     await lookupOTX(input);
     await lookupHybridAnalysis(input);
+
     vt.querySelector(".loading").hidden = true;
 });
 
@@ -99,6 +101,9 @@ async function lookupVirusTotalIP_V3(ip, container) {
     }
 }
 
+/*
+//VIRUSTOTAL V2 (WITHOUT FILE-NAME)
+//WARNING!! **DO NOT DELETE, FOR SAFETY FALLBACK**
 
 async function lookupVirusTotal(hash) {
     const vt = document.getElementById("vtResult");
@@ -140,6 +145,60 @@ async function lookupVirusTotal(hash) {
         vt.querySelector(".loading").hidden = true;
     }
 }
+*/
+
+async function lookupVirusTotal(hash) {
+    const vt = document.getElementById("vtResult");
+    vt.querySelector(".loading").hidden = false;
+    const content = vt.querySelector(".content");
+    content.innerHTML = "";
+
+    try {
+        const res = await fetch(`https://www.virustotal.com/api/v3/files/${hash}`, {
+            headers: {
+                "accept": "application/json",
+                "x-apikey": vtKey
+            }
+        });
+
+        const data = await res.json();
+
+        if (data.data && data.data.attributes) {
+            const stats = data.data.attributes.last_analysis_stats;
+            const results = data.data.attributes.last_analysis_results;
+            const fileName = data.data.attributes.names?.[0] || "Unknown";
+
+
+            const isMalicious = stats.malicious > 0;
+            const detectionColor = isMalicious ? "#ed1b24" : "#4ade80";
+
+            const malicious = Object.entries(results)
+                .filter(([_, result]) => result.category === "malicious")
+                .map(([vendor, result]) => {
+                    return `<li><strong>${vendor}:</strong> <span style="color:${detectionColor}">${result.result}</span></li>`;
+                });
+
+            content.innerHTML = `
+                <p><strong>File Name:</strong> ${fileName}</p>
+
+                <p><strong style="color: ${detectionColor}; font-size: 14px;">Detections:</strong> 
+                <span style="color: ${detectionColor}; font-weight: bold;">${stats.malicious} / ${Object.keys(results).length}</span></p>
+
+                <p><strong style="font-size: 14px;">Malicious Vendors:</strong></p>
+                <ul style="margin-top: 0.5rem; padding-left: 1.2rem;">${malicious.join("")}</ul>
+
+                <p style="margin-top: 1rem;"><a href="https://www.virustotal.com/gui/file/${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">View on VirusTotal</a></p>
+            `;
+        } else {
+            content.innerHTML = "<p>No report found for this hash.</p>";
+        }
+    } catch (err) {
+        content.innerHTML = `<p>Error: ${err.message}</p>`;
+    } finally {
+        vt.querySelector(".loading").hidden = true;
+    }
+}
+
 
 
 async function lookupOTX(hash) {
@@ -224,104 +283,7 @@ async function lookupOTX(hash) {
 }
 
 
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    const lookupBtn = document.getElementById("lookupBtn");
-    const input = document.getElementById("hashInput");
-
-    lookupBtn.addEventListener("click", () => {
-        const inputVal = input.value.trim();
-        if (!inputVal) return;
-
-        const hashes = inputVal.split(/[\s,]+/);
-        hashes.forEach((h) => {
-            if (h.length >= 32) lookupHybridAnalysis(h);
-        });
-    });
-});
-
-// async function lookupHybridAnalysis(hash) {
-//     const section = document.querySelector("#haResult");
-//     const loadingDiv = section.querySelector(".loading");
-//     const contentDiv = section.querySelector(".content");
-
-//     loadingDiv.hidden = false;
-//     contentDiv.innerHTML = "";
-
-//     chrome.runtime.sendMessage({ action: "fetchHA", hash }, (response) => {
-//         loadingDiv.hidden = true;
-
-//         if (response?.error) {
-//             contentDiv.innerHTML = `<div class="error">${response.error}</div>`;
-//             return;
-//         }
-
-//         const enriched = response.summaries.map((s) => ({
-//             id: s.id,
-//             environment: s.environment_description || "-",
-//             verdict: s.verdict || "-",
-//             submit_name: s.submissions?.[0]?.filename || "Unknown file",
-//             type: Array.isArray(s.type_short) ? s.type_short.join(", ") : s.type || "-",
-//             size: s.size ?? "-",
-//             analysis_start_time: s.submissions?.[0]?.created_at || "-",
-//             threat_level: s.threat_level ?? "-",
-//             threat_score: s.threat_score ?? 0,
-//             av_detect: typeof s.av_detect === "number" ? s.av_detect : 0,
-//             mitre: s.mitre_attcks || [],
-//             extracted_files: s.extracted_files || [],
-//             processes: s.processes || [],
-//             net_conn: s.total_network_connections ?? 0,
-//         }));
-
-//         enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
-
-//         contentDiv.innerHTML = enriched
-//             .map((entry) => {
-//                 const badgeClass =
-//                     entry.verdict === "malicious"
-//                         ? "badge-red"
-//                         : entry.verdict === "suspicious"
-//                             ? "badge-yellow"
-//                             : "badge-green";
-
-//                 const scoreIcon = entry.threat_score > 70 ? "⚠️ " : "";
-
-//                 const tags = entry.mitre
-//                     .map((m) => `${m.tactic} (${m.technique} / ${m.attck_id})`)
-//                     .join(", ");
-
-//                 return `
-//           <div class="ha-report">
-//             <div class="ha-header">
-//               <div class="ha-title">${scoreIcon}${entry.submit_name}</div>
-//               <div class="badge ${badgeClass}">${entry.verdict}</div>
-//             </div>
-//             <div class="ha-meta">
-//               <div><strong>Environment:</strong> ${entry.environment}</div>
-//               <div><strong>Analysis Time:</strong> ${entry.analysis_start_time}</div>
-//               <div><strong>Threat Score:</strong> ${entry.threat_score}</div>
-//               <div><strong>AV Detection:</strong> ${entry.av_detect}%</div>
-//             </div>
-//             <div class="ha-section">
-//               <strong>File:</strong> ${entry.type}, ${entry.size} bytes
-//             </div>
-//             <div class="ha-section">
-//               <strong>MITRE ATT&CK:</strong> <span title="${tags}">${tags.slice(0, 80)}${tags.length > 80 ? "..." : ""
-//                     }</span>
-//             </div>
-//             <div class="ha-section">
-//               <strong>Processes:</strong> ${entry.processes.length} | 
-//               <strong>Extracted Files:</strong> ${entry.extracted_files.length} | 
-//               <strong>Network Connections:</strong> ${entry.net_conn}
-//             </div>
-//           </div>
-//         `;
-//             })
-//             .join("");
-//     });
-// }
-
+// Add this function to call background.js
 async function lookupHybridAnalysis(hash) {
     const section = document.querySelector("#haResult");
     const loadingDiv = section.querySelector(".loading");
@@ -330,15 +292,18 @@ async function lookupHybridAnalysis(hash) {
     loadingDiv.hidden = false;
     contentDiv.innerHTML = "";
 
-    chrome.runtime.sendMessage({ action: "fetchHA", hash }, (response) => {
+
+    console.log("[popup] Sending message to background...");
+    chrome.runtime.sendMessage({ action: "fetchHA", hash, passphrase: ENCRYPTED_API_KEY }, (res) => {
+        console.log("✅ HA response:", res);
         loadingDiv.hidden = true;
 
-        if (response?.error) {
-            contentDiv.innerHTML = `<div class="error">${response.error}</div>`;
+        if (res.error) {
+            contentDiv.innerHTML = `<p>${res.error}</p>`;
             return;
         }
 
-        const enriched = response.summaries.map((s) => ({
+        const enriched = res.summaries.map((s) => ({
             id: s.id,
             environment: s.environment_description || "-",
             verdict: s.verdict || "-",
@@ -394,17 +359,16 @@ async function lookupHybridAnalysis(hash) {
                         <strong>Extracted Files:</strong> ${entry.extracted_files.length} | 
                         <strong>Network Connections:</strong> ${entry.net_conn}
                     </div>
-                </div>
+                <p style="margin-top: 1rem;"><a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">View on Hybrid Analysis</a></p>
+                    </div>
             `;
         }).join("");
     });
 }
 
 
-
-
 document.getElementById("copyAllBtn").addEventListener("click", () => {
-    console.log(combined)
+
     const cleanText = (containerId) => {
         const container = document.querySelector(`#${containerId} .content`);
         if (!container) return "";
@@ -433,6 +397,7 @@ document.getElementById("copyAllBtn").addEventListener("click", () => {
     if (ha) sections.push("=== Hybrid Analysis ===\n" + ha);
 
     const combined = sections.join("\n\n");
+    console.log(combined);
 
     if (!combined.trim()) {
         alert("Nothing to copy!");
@@ -466,254 +431,3 @@ function showCopyToast(msg) {
         setTimeout(() => toast.remove(), 500);
     }, 2000);
 }
-
-
-
-
-
-//
-//
-
-
-
-
-
-
-// // async function lookupHybridAnalysis(hash) {
-// //     const section = document.querySelector("#haResult");
-// //     const loadingDiv = section.querySelector(".loading");
-// //     const contentDiv = section.querySelector(".content");
-// //     loadingDiv.hidden = false;
-// //     contentDiv.innerHTML = "";
-
-// //     try {
-// //         const res = await fetch(`https://www.hybrid-analysis.com/api/v2/search/hash?hash=${hash}`, {
-// //             headers: {
-// //                 "api-key": haKey,
-// //                 "User-Agent": "Falcon Sandbox"
-// //             }
-// //         });
-
-// //         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-// //         const data = await res.json();
-
-// //         if (!data.reports || !Array.isArray(data.reports)) {
-// //             contentDiv.innerHTML = `<div class="ha-report">No report data available.</div>`;
-// //             return;
-// //         }
-
-// //         const filteredReports = data.reports.filter(r =>
-// //             r.verdict === "suspicious" || r.verdict === "malicious"
-// //         );
-
-// //         if (filteredReports.length === 0) {
-// //             loadingDiv.hidden = true;
-// //             contentDiv.innerHTML = `<div class="not-found">No suspicious/malicious reports found.</div>`;
-// //             return;
-// //         }
-
-// //         const summaries = await Promise.all(filteredReports.map(async report => {
-// //             try {
-// //                 const res = await fetch(`https://www.hybrid-analysis.com/api/v2/report/${report.id}/summary`, {
-// //                     headers: {
-// //                         "api-key": haKey,
-// //                         "User-Agent": "Falcon Sandbox"
-// //                     }
-// //                 });
-// //                 if (!res.ok) throw new Error(`Summary ${report.id} failed`);
-// //                 return await res.json();
-// //             } catch (err) {
-// //                 console.warn("Hybrid Summary Error:", err);
-// //                 return null;
-// //             }
-// //         }));
-
-// //         const enriched = summaries.filter(Boolean).map(s => ({
-// //             id: s.id,
-// //             environment: s.environment_description || "-",
-// //             verdict: s.verdict || "-",
-// //             submit_name: s.submissions?.[0]?.filename || "Unknown file",
-// //             type: Array.isArray(s.type_short) ? s.type_short.join(", ") : (s.type || "-"),
-// //             size: s.size ?? "-",
-// //             analysis_start_time: s.submissions?.[0]?.created_at || "-",
-// //             threat_level: s.threat_level ?? "-",
-// //             threat_score: s.threat_score ?? 0,
-// //             av_detect: typeof s.av_detect === "number" ? s.av_detect : 0,
-// //             ml_models: s.machine_learning_models || {},
-// //             mitre: s.mitre_attcks || [],
-// //             certificates: s.certificates || [],
-// //             is_cert_valid: s.is_certificate_valid ?? false,
-// //             extracted_files: s.extracted_files || [],
-// //             processes: s.processes || [],
-// //             net_conn: s.total_network_connections ?? 0
-// //         }));
-
-// //         enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
-
-// //         contentDiv.innerHTML = enriched.map(entry => {
-// //             const badgeClass = entry.verdict === "malicious"
-// //                 ? "badge-red"
-// //                 : entry.verdict === "suspicious"
-// //                     ? "badge-yellow"
-// //                     : "badge-green";
-
-// //             const scoreIcon = entry.threat_score > 70 ? "⚠️ " : "";
-
-// //             const tags = entry.mitre.map(m =>
-// //                 `${m.tactic} (${m.technique} / ${m.attck_id})`
-// //             ).join(", ");
-
-// //             return `
-// //         <div class="ha-report">
-// //           <div class="ha-header">
-// //             <div class="ha-title">${scoreIcon}${entry.submit_name}</div>
-// //             <div class="badge ${badgeClass}">${entry.verdict}</div>
-// //           </div>
-// //           <div class="ha-meta">
-// //             <div><strong>Environment:</strong> ${entry.environment}</div>
-// //             <div><strong>Analysis Time:</strong> ${entry.analysis_start_time}</div>
-// //             <div><strong>Threat Score:</strong> ${entry.threat_score}</div>
-// //             <div><strong>AV Detection:</strong> ${entry.av_detect}%</div>
-// //           </div>
-// //           <div class="ha-section">
-// //             <strong>File:</strong> ${entry.type}, ${entry.size} bytes
-// //           </div>
-// //           <div class="ha-section">
-// //             <strong>MITRE ATT&CK:</strong> <span title="${tags}">${tags.slice(0, 80)}${tags.length > 80 ? "..." : ""}</span>
-// //           </div>
-// //           <div class="ha-section">
-// //             <strong>Processes:</strong> ${entry.processes.length} |
-// //             <strong>Extracted Files:</strong> ${entry.extracted_files.length} |
-// //             <strong>Network Connections:</strong> ${entry.net_conn}
-// //           </div>
-// //         </div>
-// //       `;
-// //         }).join("");
-
-// //     } catch (err) {
-// //         console.error("[HybridAnalysis] Error:", err);
-// //         contentDiv.innerHTML = `<div class="error">Error fetching Hybrid Analysis data</div>`;
-// //     } finally {
-// //         loadingDiv.hidden = true;
-// //     }
-
-
-
-// async function lookupHybridAnalysis(hash) {
-//     const section = document.querySelector("#haResult");
-//     const loadingDiv = section.querySelector(".loading");
-//     const contentDiv = section.querySelector(".content");
-//     loadingDiv.hidden = false;
-//     contentDiv.innerHTML = "";
-
-//     try {
-//         const res = await fetch(`https://www.hybrid-analysis.com/api/v2/search/hash?hash=${hash}`, {
-//             headers: {
-//                 "api-key": haKey,
-//                 "User-Agent": "Falcon Sandbox"
-//             }
-//         });
-
-//         if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-//         const data = await res.json();
-
-//         if (!data.reports || !Array.isArray(data.reports)) {
-//             contentDiv.innerHTML = `<div class="ha-report">No report data available.</div>`;
-//             return;
-//         }
-
-//         const filteredReports = data.reports.filter(r =>
-//             r.verdict === "suspicious" || r.verdict === "malicious"
-//         );
-
-//         if (filteredReports.length === 0) {
-//             loadingDiv.hidden = true;
-//             contentDiv.innerHTML = `<div class="not-found">No suspicious/malicious reports found.</div>`;
-//             return;
-//         }
-
-//         const summaries = await Promise.all(filteredReports.map(async report => {
-//             try {
-//                 const res = await fetch(`https://www.hybrid-analysis.com/api/v2/report/${report.id}/summary`, {
-//                     headers: {
-//                         "api-key": haKey,
-//                         "User-Agent": "Falcon Sandbox"
-//                     }
-//                 });
-//                 if (!res.ok) throw new Error(`Summary ${report.id} failed`);
-//                 return await res.json();
-//             } catch (err) {
-//                 console.warn("Hybrid Summary Error:", err);
-//                 return null;
-//             }
-//         }));
-
-//         const enriched = summaries.filter(Boolean).map(s => ({
-//             id: s.id,
-//             environment: s.environment_description || "-",
-//             verdict: s.verdict || "-",
-//             submit_name: s.submissions?.[0]?.filename || "Unknown file",
-//             type: Array.isArray(s.type_short) ? s.type_short.join(", ") : (s.type || "-"),
-//             size: s.size ?? "-",
-//             analysis_start_time: s.submissions?.[0]?.created_at || "-",
-//             threat_level: s.threat_level ?? "-",
-//             threat_score: s.threat_score ?? 0,
-//             av_detect: typeof s.av_detect === "number" ? s.av_detect : 0,
-//             ml_models: s.machine_learning_models || {},
-//             mitre: s.mitre_attcks || [],
-//             certificates: s.certificates || [],
-//             is_cert_valid: s.is_certificate_valid ?? false,
-//             extracted_files: s.extracted_files || [],
-//             processes: s.processes || [],
-//             net_conn: s.total_network_connections ?? 0
-//         }));
-
-//         enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
-
-//         contentDiv.innerHTML = enriched.map(entry => {
-//             const badgeClass = entry.verdict === "malicious"
-//                 ? "badge-red"
-//                 : entry.verdict === "suspicious"
-//                     ? "badge-yellow"
-//                     : "badge-green";
-
-//             const scoreIcon = entry.threat_score > 70 ? "⚠️ " : "";
-
-//             const tags = entry.mitre.map(m =>
-//                 `${m.tactic} (${m.technique} / ${m.attck_id})`
-//             ).join(", ");
-
-//             return `
-//         <div class="ha-report">
-//           <div class="ha-header">
-//             <div class="ha-title">${scoreIcon}${entry.submit_name}</div>
-//             <div class="badge ${badgeClass}">${entry.verdict}</div>
-//           </div>
-//           <div class="ha-meta">
-//             <div><strong>Environment:</strong> ${entry.environment}</div>
-//             <div><strong>Analysis Time:</strong> ${entry.analysis_start_time}</div>
-//             <div><strong>Threat Score:</strong> ${entry.threat_score}</div>
-//             <div><strong>AV Detection:</strong> ${entry.av_detect}%</div>
-//           </div>
-//           <div class="ha-section">
-//             <strong>File:</strong> ${entry.type}, ${entry.size} bytes
-//           </div>
-//           <div class="ha-section">
-//             <strong>MITRE ATT&CK:</strong> <span title="${tags}">${tags.slice(0, 80)}${tags.length > 80 ? "..." : ""}</span>
-//           </div>
-//           <div class="ha-section">
-//             <strong>Processes:</strong> ${entry.processes.length} |
-//             <strong>Extracted Files:</strong> ${entry.extracted_files.length} |
-//             <strong>Network Connections:</strong> ${entry.net_conn}
-//           </div>
-//         </div>
-//       `;
-//         }).join("");
-
-//     } catch (err) {
-//         console.error("[HybridAnalysis] Error:", err);
-//         contentDiv.innerHTML = `<div class="error">Error fetching Hybrid Analysis data</div>`;
-//     } finally {
-//         loadingDiv.hidden = true;
-//     }
-// }
