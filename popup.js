@@ -2,7 +2,7 @@ const vtKey = "c01ba790c0bdde3781b873ab29d6f349a87312e3729e2da0f56690c1c67a07e5"
 const otxKey = "c01ba790c0bdde3781b873ab29d6f349a87312e3729e2da0f56690c1c67a07e5";
 const ENCRYPTED_API_KEY = "U2FsdGVkX190tktSa1oAhdRmRMP1+Ly9Dyfzg8xkkjQzCeIZeBFv9fBmIDnHhCtkjd8cBGrneCS793dxn/NEqYuqjPPHxe1zdqSrWuxV1q5jCRrjdBO5coCnjf4ChpJa=";
 
-
+let lastInputType = "unknown"; // IP or Hash
 
 document.getElementById("lookupBtn").addEventListener("click", async () => {
     const input = document.getElementById("hashInput").value.trim();
@@ -28,6 +28,7 @@ document.getElementById("lookupBtn").addEventListener("click", async () => {
     );
 
     if (ipList.length > 0) {
+        lastInputType = "ip";
         document.getElementById("copyAllContainer").hidden = false;
         for (const ip of ipList) {
             await lookupVirusTotalIP_V3(ip, vt.querySelector(".content"));
@@ -35,6 +36,7 @@ document.getElementById("lookupBtn").addEventListener("click", async () => {
         vt.querySelector(".loading").hidden = true;
         return; // skip OTX + HA
     }
+    lastInputType = "hash"
 
     // If SHA256 hash → continue to all lookups
     document.getElementById("copyAllContainer").hidden = false;
@@ -368,7 +370,6 @@ async function lookupHybridAnalysis(hash) {
 
 
 document.getElementById("copyAllBtn").addEventListener("click", () => {
-
     const cleanText = (containerId) => {
         const container = document.querySelector(`#${containerId} .content`);
         if (!container) return "";
@@ -391,18 +392,28 @@ document.getElementById("copyAllBtn").addEventListener("click", () => {
     const vt = cleanText("vtResult");
     const otx = cleanText("otxResult");
     const ha = cleanText("haResult");
-
-    if (vt) sections.push("=== VirusTotal ===\n" + vt);
-    if (otx) sections.push("=== AlienVault OTX ===\n" + otx);
-    if (ha) sections.push("=== Hybrid Analysis ===\n" + ha);
-
-    const combined = sections.join("\n\n");
-    console.log(combined);
-
-    if (!combined.trim()) {
-        alert("Nothing to copy!");
-        return;
+    
+    let combined = "";
+    
+    if(lastInputType === "ip")
+    {
+        if(!vt.trim())
+            return alert("No IP result to copy :(");
+        combined = `#IP :\nVirusTotal:\n${vt}`;
     }
+    else if(lastInputType === "hash")
+    {
+        const sections = [];
+        if (vt) sections.push("VirusTotal:\n" + vt);
+        if (otx) sections.push("AlienVault OTX:\n" + otx);
+        if (ha) sections.push("Hybrid Analysis:\n" + ha);
+        combined = "#Hash :\n" + sections.join();
+        if(!sections.length) return alert("No hash result to copy :(");
+    }
+    else
+        return alert("No result to copy...");
+
+    console.log(combined);
 
     navigator.clipboard.writeText(combined)
         .then(() => showCopyToast("✔ All results copied!"))

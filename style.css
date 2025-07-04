@@ -143,3 +143,15 @@ a:hover {
 #copyAllBtn:active {
     transform: scale(0.97);
 }
+
+#copyAllContainer
+{
+    position: sticky;
+    bottom: 0;
+    background: #1e1e2f;
+    padding: 16px 20px;
+    z-index: 100;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: flex-end;
+}
