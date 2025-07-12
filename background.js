@@ -23,11 +23,25 @@
 //                 });
 
 //                 const data = await res.json();
+//                 // const reportArray = Array.isArray(data.reports)
+//                 //     ? data.reports
+//                 //     : Object.entries(data.reports)
+//                 //         .filter(([key, value]) => !isNaN(key) && typeof value === 'object')
+//                 //         .map(([_, value]) => value);
+//                 if (!data || !data.reports || (Array.isArray(data.reports) && data.reports.length === 0)) {
+//                     console.warn("[HA] ⚠️ No reports found for this hash.");
+//                     sendResponse({ error: "No results found for the hash." });
+//                     return;
+//                 }
+
 //                 const reportArray = Array.isArray(data.reports)
 //                     ? data.reports
-//                     : Object.entries(data.reports)
-//                         .filter(([key, value]) => !isNaN(key) && typeof value === 'object')
-//                         .map(([_, value]) => value);
+//                     : (typeof data.reports === "object" && data.reports !== null)
+//                         ? Object.entries(data.reports)
+//                             .filter(([key, value]) => !isNaN(key) && typeof value === 'object')
+//                             .map(([_, value]) => value)
+//                         : [];
+
 
 //                 function selectTop4Reports(reports) {
 //                     const successReports = reports.filter(r => r.state === "SUCCESS");
@@ -114,7 +128,55 @@
 //                             if (typeof summary === 'string') {
 //                                 summary = JSON.parse(summary);
 //                             }
-//                             summaries.push(summary);
+
+//                             // Cek jika container dan punya related_id
+//                             if (summary.message?.includes("archive/container") && Array.isArray(summary.related_id)) {
+//                                 console.log(`📦 ID ${reportId} is archive. Fetching related IDs...`, summary.related_id);
+
+//                                 for (const relatedId of summary.related_id) {
+//                                     try {
+//                                         const relatedRes = await fetch(`${corsProxy}https://www.hybrid-analysis.com/api/v2/report/${relatedId}/summary`, {
+//                                             headers: {
+//                                                 'api-key': decrypted,
+//                                                 'User-Agent': 'Falcon Sandbox',
+//                                             }
+//                                         });
+
+//                                         const contentType = relatedRes.headers.get("content-type") || "";
+//                                         const rawRelatedText = await relatedRes.text();
+
+//                                         if (!contentType.includes("application/json")) {
+//                                             console.warn(`❌ Related ID ${relatedId} returned non-JSON`);
+//                                             continue;
+//                                         }
+
+//                                         let relatedSummary = JSON.parse(rawRelatedText);
+//                                         if (typeof relatedSummary === "string") {
+//                                             relatedSummary = JSON.parse(relatedSummary);
+//                                         }
+
+//                                         summaries.push(relatedSummary);
+//                                         console.log(`✅ Related summary added for ID: ${relatedId}`);
+//                                     } catch (e) {
+//                                         console.warn(`⚠️ Failed to fetch related summary ${relatedId}:`, e.message);
+//                                         continue;
+//                                     }
+//                                 }
+//                             } else {
+//                                 if (
+//                                     summary &&
+//                                     summary.state !== "ERROR" &&
+//                                     summary.verdict &&
+//                                     Array.isArray(summary.signatures) &&
+//                                     summary.signatures.length > 0
+//                                 ) {
+//                                     summaries.push(summary);
+//                                 } else {
+//                                     console.log(`[HA] ⛔ Skipping invalid/empty summary for report ID: ${reportId}`);
+//                                 }
+
+//                             }
+
 //                         } catch (e) {
 //                             console.error("⚠️ Failed to parse summary:", e.message);
 //                             console.log("🧪 rawText preview:\n", rawText.slice(0, 500));
@@ -141,11 +203,12 @@
 // });
 
 
-
 import CryptoJS from "./crypto-wrapper.js";
 const corsProxy = "https://thingproxy.freeboard.io/fetch/";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+
+    // ✅ FETCH Hybrid Analysis
     if (request.action === 'fetchHA') {
         (async () => {
             try {
@@ -167,11 +230,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                 });
 
                 const data = await res.json();
-                // const reportArray = Array.isArray(data.reports)
-                //     ? data.reports
-                //     : Object.entries(data.reports)
-                //         .filter(([key, value]) => !isNaN(key) && typeof value === 'object')
-                //         .map(([_, value]) => value);
                 if (!data || !data.reports || (Array.isArray(data.reports) && data.reports.length === 0)) {
                     console.warn("[HA] ⚠️ No reports found for this hash.");
                     sendResponse({ error: "No results found for the hash." });
@@ -185,7 +243,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             .filter(([key, value]) => !isNaN(key) && typeof value === 'object')
                             .map(([_, value]) => value)
                         : [];
-
 
                 function selectTop4Reports(reports) {
                     const successReports = reports.filter(r => r.state === "SUCCESS");
@@ -256,9 +313,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                         const contentType = summaryRes.headers.get("content-type") || "";
                         const rawText = await summaryRes.text();
-                        console.log("📦 Content-Type:", contentType);
-                        console.log("📦 rawText Preview:", rawText.slice(0, 500));
-
                         if (!contentType.includes("application/json")) {
                             console.error("❌ Response is not JSON! Dumping raw text:");
                             console.log(rawText.slice(0, 1000));
@@ -273,7 +327,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                 summary = JSON.parse(summary);
                             }
 
-                            // Cek jika container dan punya related_id
                             if (summary.message?.includes("archive/container") && Array.isArray(summary.related_id)) {
                                 console.log(`📦 ID ${reportId} is archive. Fetching related IDs...`, summary.related_id);
 
@@ -318,7 +371,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                 } else {
                                     console.log(`[HA] ⛔ Skipping invalid/empty summary for report ID: ${reportId}`);
                                 }
-
                             }
 
                         } catch (e) {
@@ -342,6 +394,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             }
         })();
 
-        return true; // keep sendResponse open
+        return true;
     }
+
+    // ✅ FETCH AbuseIPDB
+    else if (request.action === 'fetchAbuseIPDB') {
+        (async () => {
+            try {
+                const ip = request.ip;
+                const url = `${corsProxy}https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&verbose`;
+
+                const res = await fetch(url, {
+                    headers: {
+                        "Key": request.apiKey,
+                        "Accept": "application/json"
+                    }
+                });
+
+                const data = await res.json();
+                if (!data || !data.data) {
+                    sendResponse({ error: "Invalid response from AbuseIPDB" });
+                    return;
+                }
+
+                sendResponse({ data: data.data });
+            } catch (err) {
+                sendResponse({ error: err.message });
+            }
+        })();
+
+        return true;
+    }
+
 });
