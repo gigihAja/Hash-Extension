@@ -367,6 +367,11 @@ ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                 return;
             }
 
+            if (!res.summaries || res.summaries.length === 0) {
+                contentDiv.innerHTML = `<p style="color:#f87171;"><strong>No reports found for this hash.</strong></p>`;
+                return;
+            }
+
 
             console.log("✅ [popup] Summary parsing...");
             const enriched = res.summaries.map((s) => ({
@@ -455,6 +460,8 @@ ${maliciousIndicators.length > 0
 </p>
 `.trim();
             }).join("");
+
+
 
             console.log("✅ [popup] Rendering complete.");
 
