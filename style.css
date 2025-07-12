@@ -144,8 +144,7 @@ a:hover {
     transform: scale(0.97);
 }
 
-#copyAllContainer
-{
+#copyAllContainer {
     position: sticky;
     bottom: 0;
     background: #1e1e2f;
