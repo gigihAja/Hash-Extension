@@ -307,7 +307,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                                     }
                                 }
                             } else {
-                                summaries.push(summary);
+                                if (
+                                    summary &&
+                                    summary.state !== "ERROR" &&
+                                    summary.verdict &&
+                                    Array.isArray(summary.signatures) &&
+                                    summary.signatures.length > 0
+                                ) {
+                                    summaries.push(summary);
+                                } else {
+                                    console.log(`[HA] ⛔ Skipping invalid/empty summary for report ID: ${reportId}`);
+                                }
+
                             }
 
                         } catch (e) {

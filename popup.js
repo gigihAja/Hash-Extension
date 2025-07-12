@@ -151,6 +151,55 @@ async function lookupVirusTotal(hash) {
 }
 */
 
+// async function lookupVirusTotal(hash) {
+//     const vt = document.getElementById("vtResult");
+//     vt.querySelector(".loading").hidden = false;
+//     const content = vt.querySelector(".content");
+//     content.innerHTML = "";
+
+//     try {
+//         const res = await fetch(`https://www.virustotal.com/api/v3/files/${hash}`, {
+//             headers: {
+//                 "accept": "application/json",
+//                 "x-apikey": vtKey
+//             }
+//         });
+
+//         const data = await res.json();
+
+//         if (data.data && data.data.attributes) {
+//             const stats = data.data.attributes.last_analysis_stats;
+//             const results = data.data.attributes.last_analysis_results;
+//             const fileName = data.data.attributes.names?.[0] || "Unknown";
+
+
+//             const isMalicious = stats.malicious > 0;
+//             const detectionColor = isMalicious ? "#ed1b24" : "#4ade80";
+
+//             const malicious = Object.entries(results)
+//                 .filter(([_, result]) => result.category === "malicious")
+//                 .map(([vendor, result]) => {
+//                     return `<li><strong>${vendor}:</strong> <span style="color:${detectionColor}">${result.result}</span></li>`;
+//                 });
+
+//             content.innerHTML = `
+// <p><strong>File Name:</strong> ${fileName}</p>
+// <p><strong>Detections:</strong> ${stats.malicious} / ${Object.keys(results).length}</p>
+// ${malicious.length > 0 ? `<p><strong>Malicious Vendors:</strong></p><ul>${malicious.join("")}</ul>` : ""}
+// <p><a href="https://www.virustotal.com/gui/file/${hash}" target="_blank">View on VirusTotal</a></p>
+// `.trim();
+//         } else {
+//             content.innerHTML = "<p>No report found for this hash.</p>";
+//         }
+//     } catch (err) {
+//         content.innerHTML = `<p>Error: ${err.message}</p>`;
+//     } finally {
+//         vt.querySelector(".loading").hidden = true;
+//     }
+// }
+
+
+
 async function lookupVirusTotal(hash) {
     const vt = document.getElementById("vtResult");
     vt.querySelector(".loading").hidden = false;
@@ -168,10 +217,16 @@ async function lookupVirusTotal(hash) {
         const data = await res.json();
 
         if (data.data && data.data.attributes) {
-            const stats = data.data.attributes.last_analysis_stats;
-            const results = data.data.attributes.last_analysis_results;
-            const fileName = data.data.attributes.names?.[0] || "Unknown";
+            const attrs = data.data.attributes;
+            const stats = attrs.last_analysis_stats;
+            const results = attrs.last_analysis_results;
 
+            // ✅ Ambil file name dengan fallback berurutan
+            const fileName =
+                attrs.meaningful_name ||
+                attrs["original name"] ||
+                (attrs.names?.find(name => !name.includes("%"))) ||
+                "Unknown";
 
             const isMalicious = stats.malicious > 0;
             const detectionColor = isMalicious ? "#ed1b24" : "#4ade80";
@@ -197,6 +252,8 @@ ${malicious.length > 0 ? `<p><strong>Malicious Vendors:</strong></p><ul>${malici
         vt.querySelector(".loading").hidden = true;
     }
 }
+
+
 
 
 
