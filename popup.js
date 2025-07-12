@@ -42,8 +42,8 @@ document.getElementById("lookupBtn").addEventListener("click", async () => {
     // If SHA256 hash → continue to all lookups
     document.getElementById("copyAllContainer").hidden = false;
 
-    // await lookupVirusTotal(input);
-    // await lookupOTX(input);
+    await lookupVirusTotal(input);
+    await lookupOTX(input);
     await lookupHybridAnalysis(input);
 
     vt.querySelector(".loading").hidden = true;
@@ -282,99 +282,6 @@ async function lookupOTX(hash) {
 
 
 // //Under Development! This is a BACKUP CODE.
-// // Add this function to call background.js
-// async function lookupHybridAnalysis(hash) {
-//     const section = document.querySelector("#haResult");
-//     const loadingDiv = section.querySelector(".loading");
-//     const contentDiv = section.querySelector(".content");
-
-//     loadingDiv.hidden = false;
-//     contentDiv.innerHTML = "";
-
-
-//     console.log("[popup] Sending message to background...");
-//     chrome.runtime.sendMessage({ action: "fetchHA", hash, passphrase: ENCRYPTED_API_KEY }, (res) => {
-//         console.log("✅ HA response:", res);
-//         loadingDiv.hidden = true;
-
-//         if (res.error) {
-//             let html = `<p style="color:#f87171;"><strong>${res.error}</strong></p>`;
-
-//             if (res.raw) {
-//                 html += `
-// <pre style="white-space: pre-wrap; font-size: 12px; background: #2e2e42; padding: 10px; border-radius: 6px; max-height: 300px; overflow-y: auto; border: 1px solid #444;">
-// ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
-// </pre>`;
-//             }
-
-//             contentDiv.innerHTML = html;
-//             return;
-//         }
-
-
-//         const enriched = res.summaries.map((s) => ({
-//             id: s.id,
-//             environment: s.environment_description || "-",
-//             verdict: s.verdict || "-",
-//             submit_name: s.submissions?.[0]?.filename || "Unknown file",
-//             type: Array.isArray(s.type_short) ? s.type_short.join(", ") : s.type || "-",
-//             size: s.size ?? "-",
-//             analysis_start_time: s.submissions?.[0]?.created_at || "-",
-//             threat_level: s.threat_level ?? "-",
-//             threat_score: s.threat_score ?? 0,
-//             av_detect: typeof s.av_detect === "number" ? s.av_detect : 0,
-//             mitre: s.mitre_attcks || [],
-//             extracted_files: s.extracted_files || [],
-//             processes: s.processes || [],
-//             net_conn: s.total_network_connections ?? 0,
-//         }));
-
-//         enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
-
-//         contentDiv.innerHTML = enriched.map((entry, index) => {
-//             const badgeClass =
-//                 entry.verdict === "malicious"
-//                     ? "badge-red"
-//                     : entry.verdict === "suspicious"
-//                         ? "badge-yellow"
-//                         : "badge-green";
-
-//             const scoreIcon = entry.threat_score > 70 ? "⚠️ " : "";
-
-//             const tags = entry.mitre
-//                 .map((m) => `${m.tactic} (${m.technique} / ${m.attck_id})`)
-//                 .join(", ");
-
-//             return `
-// <p><strong>Report ${index + 1}:</strong></p>
-// <p>${entry.submit_name}</p>
-// <p>${entry.verdict}</p>
-// <p>Environment: ${entry.environment}</p>
-// <p>Analysis Time: ${entry.analysis_start_time}</p>
-// <p>Threat Score: ${entry.threat_score}</p>
-// <p>AV Detection: ${entry.av_detect}%</p>
-// <p>File: ${entry.type}, ${entry.size} bytes</p>
-//                 <p style="margin-top: 1rem;"><a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">View on Hybrid Analysis</a></p>
-//                     </div>
-//             `.trim();
-//         }).join("");
-//     });
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 async function lookupHybridAnalysis(hash) {
     const section = document.querySelector("#haResult");
     const loadingDiv = section.querySelector(".loading");
@@ -426,6 +333,18 @@ ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
             enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
 
             console.log("✅ [popup] Rendering summaries...");
+
+            //Change Analysis Date format to DD-MM-YYYY 
+            function formatDate(isoDateStr) {
+                const date = new Date(isoDateStr);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}-${month}-${year}`;
+            }
+
+
+
             contentDiv.innerHTML = enriched.map((entry, index) => {
                 const badgeClass =
                     entry.verdict === "malicious"
@@ -440,23 +359,176 @@ ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                     .map((m) => `${m.tactic} (${m.technique} / ${m.attck_id})`)
                     .join(", ");
 
+                const maliciousIndicators = (res.summaries[index]?.signatures || []).filter(sig =>
+                    (sig.threat_level_human === "suspicious" || sig.threat_level_human === "malicious") &&
+                    sig.category !== "General"
+                );
+
                 return `
 <p><strong>Report ${index + 1}:</strong></p>
-<p>${entry.submit_name}</p>
-<p>${entry.verdict}</p>
+<p>File Name: ${entry.submit_name}</p>
+<p>State: ${entry.verdict}</p>
 <p>Environment: ${entry.environment}</p>
-<p>Analysis Time: ${entry.analysis_start_time}</p>
+<p>Analysis Time: ${formatDate(entry.analysis_start_time)}</p>
 <p>Threat Score: ${entry.threat_score}</p>
 <p>AV Detection: ${entry.av_detect}%</p>
-<p>File: ${entry.type}, ${entry.size} bytes</p>
-<p style="margin-top: 1rem;"><a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">View on Hybrid Analysis</a></p>
-</div>
+<p>File Type: ${entry.type}, ${entry.size} bytes</p>
+
+${maliciousIndicators.length > 0
+                        ? `<div style="margin-top:10px;">
+        <strong>Malicious Indicators:</strong>
+        <ul style="margin-left:1rem;">
+            ${maliciousIndicators.map(sig => {
+                            const textColor = sig.threat_level_human === "malicious" ? "#b91c1c" : "#ea580c"; // red or orange
+                            return `
+                <li>
+                    <span style="color:${textColor}; font-weight:600;">
+                        ${sig.category}
+                    </span> : ${sig.name}
+                </li>`;
+                        }).join('')}
+        </ul>
+    </div>`
+                        : `<p>No suspicious or malicious indicators found in this report.</p>`}
+
+<p style="margin-top: 1rem;">
+    <a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">
+        View on Hybrid Analysis
+    </a>
+</p>
 `.trim();
             }).join("");
+
             console.log("✅ [popup] Rendering complete.");
+
+
         }
     );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// async function lookupHybridAnalysis(hash) {
+//     const section = document.querySelector("#haResult");
+//     const loadingDiv = section.querySelector(".loading");
+//     const contentDiv = section.querySelector(".content");
+
+//     loadingDiv.hidden = false;
+//     contentDiv.innerHTML = "";
+
+//     console.log("🔍 [popup] Sending request to background.js...");
+
+//     chrome.runtime.sendMessage(
+//         { action: "fetchHA", hash, passphrase: ENCRYPTED_API_KEY },
+//         (res) => {
+//             console.log("✅ [popup] Received response:", res);
+//             loadingDiv.hidden = true;
+
+//             if (res.error) {
+//                 let html = `<p style="color:#f87171;"><strong>${res.error}</strong></p>`;
+//                 if (res.raw) {
+//                     html += `
+// <pre style="white-space: pre-wrap; font-size: 12px; background: #2e2e42; padding: 10px; border-radius: 6px; max-height: 300px; overflow-y: auto; border: 1px solid #444;">
+// ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
+// </pre>`;
+//                 }
+//                 contentDiv.innerHTML = html;
+//                 return;
+//             }
+
+//             console.log("✅ [popup] Parsing summaries...");
+//             const enriched = res.summaries.map((s) => ({
+//                 id: s.id,
+//                 environment: s.environment_description || "-",
+//                 verdict: s.verdict || "-",
+//                 submit_name: s.submissions?.[0]?.filename || "Unknown file",
+//                 type: Array.isArray(s.type_short) ? s.type_short.join(", ") : s.type || "-",
+//                 size: s.size ?? "-",
+//                 analysis_start_time: s.submissions?.[0]?.created_at || "-",
+//                 threat_level: s.threat_level ?? "-",
+//                 threat_score: s.threat_score ?? 0,
+//                 av_detect: typeof s.av_detect === "number" ? s.av_detect : 0,
+//                 mitre: s.mitre_attcks || [],
+//                 net_conn: s.total_network_connections ?? 0,
+//                 signatures: s.signatures || [],
+//             }));
+
+//             enriched.sort((a, b) => new Date(b.analysis_start_time) - new Date(a.analysis_start_time));
+
+//             function formatDate(isoDateStr) {
+//                 const date = new Date(isoDateStr);
+//                 const day = String(date.getDate()).padStart(2, '0');
+//                 const month = String(date.getMonth() + 1).padStart(2, '0');
+//                 const year = date.getFullYear();
+//                 return `${day}-${month}-${year}`;
+//             }
+
+//             function renderMaliciousIndicators(signatures) {
+//                 if (!signatures.length) return "<p><em>No malicious indicators found.</em></p>";
+
+//                 return signatures.map((sig, idx) => `
+// <div style="padding-left: 10px; margin-top: 0.5rem;">
+//   <p><strong>Indicator ${idx + 1}</strong></p>
+//   <p>Category: ${sig.category}</p>
+//   <p>Description: ${sig.name}</p>
+// </div>
+//                 `).join("");
+//             }
+
+//             console.log("✅ [popup] Rendering...");
+
+//             contentDiv.innerHTML = enriched.map((entry, index) => {
+//                 const badgeClass =
+//                     entry.verdict === "malicious"
+//                         ? "badge-red"
+//                         : entry.verdict === "suspicious"
+//                             ? "badge-yellow"
+//                             : "badge-green";
+
+//                 const scoreIcon = entry.threat_score > 70 ? "⚠️ " : "";
+
+//                 return `
+// <div style="margin-bottom: 1.5rem;">
+//   <p><strong>Report ${index + 1}:</strong></p>
+//   <p>File Name: ${entry.submit_name}</p>
+//   <p>State: ${entry.verdict}</p>
+//   <p>Environment: ${entry.environment}</p>
+//   <p>Analysis Time: ${formatDate(entry.analysis_start_time)}</p>
+//   <p>Threat Score: ${entry.threat_score}</p>
+//   <p>AV Detection: ${entry.av_detect}%</p>
+//   <p>File Type: ${entry.type}, ${entry.size} bytes</p>
+
+//   <p style="margin-top: 0.8rem;"><strong>Malicious Indicators:</strong></p>
+//   ${renderMaliciousIndicators(entry.signatures)}
+
+//   <p style="margin-top: 1rem;">
+//     <a href="https://www.hybrid-analysis.com/sample/${entry.id}" target="_blank" style="color:#93c5fd; text-decoration: underline;">
+//       View Full Report on Hybrid Analysis
+//     </a>
+//   </p>
+//   <hr style="margin-top: 1.2rem; border-color: #444;">
+// </div>
+//                 `;
+//             }).join("");
+
+//             console.log("✅ [popup] Done rendering summaries with indicators.");
+//         }
+//     );
+// }
+
+
+
 
 
 

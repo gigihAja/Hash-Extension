@@ -154,3 +154,33 @@ a:hover {
     display: flex;
     justify-content: flex-end;
 }
+
+
+.indicator-entry {
+    background: #1f1f1f;
+    border-left: 3px solid #ff5252;
+    padding: 8px;
+    margin-top: 6px;
+    font-size: 0.85rem;
+}
+
+.indicator-btn {
+    margin-top: 8px;
+    background: #2c2c2c;
+    color: white;
+    border: 1px solid #444;
+    padding: 4px 10px;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.indicator-btn:hover {
+    background: #3a3a3a;
+}
+
+.indicator-empty {
+    font-style: italic;
+    padding: 6px;
+    color: #aaa;
+}
