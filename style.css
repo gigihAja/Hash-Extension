@@ -184,3 +184,23 @@ a:hover {
     padding: 6px;
     color: #aaa;
 }
+
+#vtResult {
+    background-color: #242436;
+    border-left: 4px solid #8b5cf6;
+}
+
+#abuseResult {
+    background-color: #26232f;
+    border-left: 4px solid #f87171;
+}
+
+#alienResult {
+    background-color: #1f2533;
+    border-left: 4px solid #60a5fa;
+}
+
+#haResult {
+    background-color: #1e2c26;
+    border-left: 4px solid #34d399;
+}
