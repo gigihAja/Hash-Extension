@@ -20,33 +20,41 @@
       <button id="lookupBtn"><i class="fas fa-search"></i> Lookup</button>
     </div>
 
-    <div class="result-section" id="vtResult">
+    <div id="vtResult" class="result-section">
       <h2><i class="fas fa-virus"></i> VirusTotal</h2>
-      <div class="loading" hidden>Loading...</div>
+      <p class="loading" hidden>Loading...</p>
       <div class="content"></div>
     </div>
 
-    <div class="result-section" id="otxResult">
+    <div id="abuseResult" class="result-section">
+      <h2><i class="fas fa-gavel"></i> AbuseIPDB</h2>
+      <p class="loading" hidden>Loading...</p>
+      <div class="content"></div>
+    </div>
+
+    <div id="alienResult" class="result-section">
       <h2><i class="fas fa-satellite-dish"></i> AlienVault OTX</h2>
-      <div class="loading" hidden>Loading...</div>
+      <p class="loading" hidden>Loading...</p>
       <div class="content"></div>
     </div>
 
-    <div class="result-section" id="haResult">
+    <div id="haResult" class="result-section">
       <h2><i class="fas fa-microscope"></i> Hybrid Analysis</h2>
-      <div class="loading" hidden>Loading...</div>
+      <p class="loading" hidden>Loading...</p>
       <div class="content"></div>
     </div>
-  </div>
 
-  <div id="copyAllContainer" style="text-align: right; margin-top: 1rem;" hidden>
-    <button id="copyAllBtn"
-      style="background: linear-gradient(135deg, #6d28d9, #9333ea); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 600; cursor: pointer;">
-      📋 Copy All
-    </button>
-  </div>
 
-  <script src="popup.js"></script>
+
+    <div id="copyAllContainer" style="text-align: right; margin-top: 1rem;" hidden>
+      <button id="copyAllBtn"
+        style="background: linear-gradient(135deg, #6d28d9, #9333ea); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 600; cursor: pointer;">
+        📋 Copy All
+      </button>
+    </div>
+
+    <script type="module" src="popup.js"></script>
+
 
 </body>
 
