@@ -51,16 +51,26 @@ export async function lookupAbuseIPDB(ip, container) {
         recent.forEach(r => r.categories.forEach(id => categorySet.add(id)));
         const categories = Array.from(categorySet).map(id => categoryMap[id] || `Unknown (${id})`);
 
+        // Tentukan warna untuk confidence
+        let confidenceColor = "lightGreen";
+        if (d.abuseConfidenceScore > 50) confidenceColor = "red";
+        else if (d.abuseConfidenceScore > 0) confidenceColor = "orange";
+
+        // Tentukan warna untuk private IP
+        const typeDisplay = d.isPublic
+            ? "Public IP"
+            : `<span style="color:lightGreen; font-weight:bold;">Private IP</span>`;
+
         // Render hasil
         container.innerHTML += `
 <p>IP: ${ip}</p>
-  <p>Type: ${d.isPublic ? "Public IP" : "Private IP"}</p>
-  <p>Confidence of Abuse: ${d.abuseConfidenceScore}%</p>
-  <p>Reports Count: ${d.totalReports} Times</p>
-  <p>Last Report: ${formattedDate}</p>
-  <p>Category: ${categories.join(', ') || '-'}</p>
-  ${d.isWhitelisted ? `<p>Note: Whitelisted</p>` : ""}
-  <p><a href="https://www.abuseipdb.com/check/${d.ipAddress}" target="_blank">View on AbuseIPDB</a></p>
+<p>Type: ${typeDisplay}</p>
+<p><span style="color:${confidenceColor}; font-weight:bold;">Confidence of Abuse: ${d.abuseConfidenceScore}%</span></p>
+<p>Reports Count: ${d.totalReports} Times</p>
+<p>Last Report: ${formattedDate}</p>
+<p>Category: ${categories.join(', ') || '-'}</p>
+${d.isWhitelisted ? `<p>Note: Whitelisted</p>` : ""}
+<p><a href="https://www.abuseipdb.com/check/${d.ipAddress}" target="_blank">View on AbuseIPDB</a></p>
         `.trim();
 
     } catch (err) {
