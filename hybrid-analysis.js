@@ -1,5 +1,8 @@
 const ENCRYPTED_API_KEY = "U2FsdGVkX190tktSa1oAhdRmRMP1+Ly9Dyfzg8xkkjQzCeIZeBFv9fBmIDnHhCtkjd8cBGrneCS793dxn/NEqYuqjPPHxe1zdqSrWuxV1q5jCRrjdBO5coCnjf4ChpJa=";
 
+
+import { createResultCard } from "./popup.js";
+
 export async function lookupHybridAnalysis(hash) {
     return new Promise((resolve) => {
         const section = document.querySelector("#haResult");
@@ -70,8 +73,9 @@ ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                 }
 
 
+                for (let index = 0; index < enriched.length; index++) {
+                    const entry = enriched[index];
 
-                contentDiv.innerHTML = enriched.map((entry, index) => {
                     const badgeClass =
                         entry.verdict === "malicious"
                             ? "badge-red"
@@ -90,7 +94,12 @@ ${res.raw.replace(/</g, "&lt;").replace(/>/g, "&gt;")}
                         sig.category !== "General"
                     );
 
-                    return `
+
+                    const card = createResultCard();
+                    const inner = card.querySelector(".content");
+
+
+                    inner.innerHTML = `
 <p><strong>Report ${index + 1}:</strong></p>
 <p>File Name: ${entry.submit_name}</p>
 <p>State: ${entry.verdict}</p>
@@ -124,16 +133,14 @@ ${sig.category}
     </a>
 </p>
 `.trim();
-                }).join("");
-
+                    contentDiv.appendChild(card);
+                    card.querySelector(".loading").hidden = true;
+                }
                 loadingDiv.hidden = true;
                 resolve();
-
-                console.log("✅ [popup] Rendering complete.");
-
-
-            }
-        );
-
-    })
+                //.join("");
+            })
+        console.log("✅ [popup] Rendering complete.");
+    }
+    );
 }
