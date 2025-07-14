@@ -13,23 +13,38 @@ export function setupCopyAllButton() {
 
             const clone = container.cloneNode(true);
 
-            // Hapus loading dummy
+            // Hapus loading
             clone.querySelectorAll(".loading").forEach(el => el.remove());
 
-            // Hapus link (a)
+            // Hapus link
             clone.querySelectorAll("a").forEach(a => a.remove());
 
-            // Format ulang ul > li jadi teks biasa
+            // Ganti ul > li
             clone.querySelectorAll("ul").forEach(ul => {
                 const items = Array.from(ul.querySelectorAll("li"))
                     .map(li => `- ${li.innerText.trim()}`);
                 const block = document.createElement("div");
-                block.textContent = items.join("\n\n");
+                block.textContent = items.join("\n");
                 ul.replaceWith(block);
             });
 
-            return clone.textContent.trim();
+            // Ganti <p> & <br> jadi teks biasa
+            clone.querySelectorAll("p").forEach(p => {
+                const text = document.createTextNode(p.textContent.trim() + "\n");
+                p.replaceWith(text);
+            });
+            clone.querySelectorAll("br").forEach(br => {
+                const text = document.createTextNode("\n");
+                br.replaceWith(text);
+            });
+
+            // Sanitize \n\n → \n
+            let text = clone.textContent.trim();
+            text = text.replace(/\r/g, "").replace(/\n{2,}/g, "\n");
+            return text;
         };
+
+
 
 
         const vt = cleanText("vtResult");
