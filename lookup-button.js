@@ -6,6 +6,14 @@ import { lookupAbuseIPDB } from "./abuseipdb.js";
 
 export function setupLookupButton() {
     const lookupBtn = document.getElementById("lookupBtn");
+    const inputField = document.getElementById("hashInput");
+
+    inputField.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            lookupBtn.click();
+        }
+    });
 
     lookupBtn.addEventListener("click", async () => {
         const input = document.getElementById("hashInput").value.trim();
