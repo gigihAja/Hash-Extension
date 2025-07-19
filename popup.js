@@ -60,3 +60,14 @@ document.addEventListener("DOMContentLoaded", () => {
     setupCopyAllButton();
     setupOpenAllLinksButton();
 });
+
+
+const observer = new MutationObserver(() => {
+    const links = document.querySelectorAll(".external-link");
+    const actions = document.getElementById("actionButtonsContainer");
+    if (links.length > 0) {
+        actions.style.display = "flex";
+    }
+});
+
+observer.observe(document.body, { childList: true, subtree: true });

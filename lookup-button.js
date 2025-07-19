@@ -115,7 +115,6 @@ export function setupLookupButton() {
             ha.querySelector(".loading").hidden = true;
         }
 
-        const actions = document.getElementById("actionButtonsContainer");
-        if (actions) actions.style.display = "flex";
+        document.getElementById("actionButtonsContainer").style.display = "flex";
     });
 }
