@@ -44,19 +44,24 @@
       <div class="content"></div>
     </div>
 
+    <div id="actionButtonsContainer" style="display: none; justify-content: space-between; margin-top: 1rem;">
+      <button id="openAllLinksBtn"
+        style="background: linear-gradient(135deg, #059669, #10b981); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 600; cursor: pointer;">
+        🔗 Open All Links
+      </button>
 
-
-    <div id="copyAllContainer" style="text-align: right; margin-top: 1rem;" hidden>
       <button id="copyAllBtn"
         style="background: linear-gradient(135deg, #6d28d9, #9333ea); color: white; border: none; border-radius: 8px; padding: 6px 14px; font-weight: 600; cursor: pointer;">
         📋 Copy All
       </button>
     </div>
+  </div>
 
-    <script type="module" src="popup.js"></script>
-
+  <!-- ⬇️ Tambahkan semua script module yang dibutuhkan -->
+  <script type="module" src="popup.js"></script>
+  <script type="module" src="lookup-button.js"></script>
+  <script type="module" src="open-all-links.js"></script>
 
 </body>
-
 
 </html>

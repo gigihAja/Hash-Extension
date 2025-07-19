@@ -70,7 +70,7 @@ export async function lookupAbuseIPDB(ip, container) {
 <p>Last Report: ${formattedDate}</p>
 <p>Category: ${categories.join(', ') || '-'}</p>
 ${d.isWhitelisted ? `<p><strong>Note:</strong><span style="color: lightGreen;"> Whitelisted</p>` : ""}
-<p><a href="https://www.abuseipdb.com/check/${d.ipAddress}" target="_blank">View on AbuseIPDB</a></p>
+<p><a href="https://www.abuseipdb.com/check/${d.ipAddress}" target="_blank" class="external-link">View on AbuseIPDB</a></p>
         `.trim();
 
     } catch (err) {

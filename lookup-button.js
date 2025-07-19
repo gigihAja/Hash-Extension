@@ -16,7 +16,7 @@ export function setupLookupButton() {
     });
 
     lookupBtn.addEventListener("click", async () => {
-        const input = document.getElementById("hashInput").value.trim();
+        const input = inputField.value.trim();
         if (!input) return;
 
         resetContainers();
@@ -25,7 +25,6 @@ export function setupLookupButton() {
             /^[0-9]{1,3}(\.[0-9]{1,3}){3}$/.test(ip)
         );
         const isIP = ipList.length > 0;
-
 
         if (isIP) {
             state.lastInputType = "ip";
@@ -37,9 +36,7 @@ export function setupLookupButton() {
             ab.style.display = "block";
 
             vt.querySelector(".content").innerHTML = "";
-
             ab.querySelector(".content").innerHTML = "";
-
 
             for (const ip of ipList) {
                 const vtContent = vt.querySelector(".content");
@@ -57,13 +54,21 @@ export function setupLookupButton() {
                 vtCard.querySelector(".loading").hidden = false;
                 abCard.querySelector(".loading").hidden = false;
 
-                await lookupVirusTotalIP_V3(ip, vtInner);
-                await lookupAbuseIPDB(ip, abInner);
+                try {
+                    await lookupVirusTotalIP_V3(ip, vtInner);
+                } catch (e) {
+                    console.error("VT IP lookup error:", e);
+                }
+
+                try {
+                    await lookupAbuseIPDB(ip, abInner);
+                } catch (e) {
+                    console.error("Abuse IPDB lookup error:", e);
+                }
 
                 vtCard.querySelector(".loading").hidden = true;
                 abCard.querySelector(".loading").hidden = true;
             }
-
 
             vt.querySelector(".loading").hidden = true;
             ab.querySelector(".loading").hidden = true;
@@ -87,13 +92,30 @@ export function setupLookupButton() {
             otx.querySelector(".loading").hidden = false;
             ha.querySelector(".loading").hidden = false;
 
-            await lookupVirusTotal(input);
-            await lookupOTX(input);
-            await lookupHybridAnalysis(input);
+            try {
+                await lookupVirusTotal(input);
+            } catch (e) {
+                console.error("VT hash lookup error:", e);
+            }
+
+            try {
+                await lookupOTX(input);
+            } catch (e) {
+                console.error("OTX lookup error:", e);
+            }
+
+            try {
+                await lookupHybridAnalysis(input);
+            } catch (e) {
+                console.error("HA lookup error:", e);
+            }
 
             vt.querySelector(".loading").hidden = true;
             otx.querySelector(".loading").hidden = true;
             ha.querySelector(".loading").hidden = true;
         }
+
+        const actions = document.getElementById("actionButtonsContainer");
+        if (actions) actions.style.display = "flex";
     });
 }

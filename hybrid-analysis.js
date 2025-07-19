@@ -128,7 +128,7 @@ ${sig.category}
                             `<p>No suspicious or malicious indicators found in this report.</p>`}
 
 <p style="margin-top: 1rem;">
-<a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" style="color:#93c5fd; text-decoration: underline;">
+<a href="https://hybrid-analysis.com/search?query=${hash}" target="_blank" class="external-link" style="color:#93c5fd; text-decoration: underline;">
         View on Hybrid Analysis
     </a>
 </p>

@@ -60,7 +60,7 @@ export async function lookupOTX(hash, container) {
 <ul>${yaraDetections.map(y => `<li>${y}</li>`).join("")}</ul>
 <p><strong>Alerts (${alerts.length}):</strong></p>
 <ul>${alerts.map(a => `<li>${a}</li>`).join("")}</ul>
-<p><a href="https://otx.alienvault.com/indicator/file/${hash}" target="_blank">View on OTX</a></p>
+<p><a href="https://otx.alienvault.com/indicator/file/${hash}" target="_blank" class="external-link">View on OTX</a></p>
         `.trim();
 
         /*

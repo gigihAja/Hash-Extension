@@ -1,5 +1,6 @@
 import { setupLookupButton } from "./lookup-button.js";
 import { setupCopyAllButton } from "./copy-all-button.js";
+import { setupOpenAllLinksButton } from "./open-all-links.js";
 
 // Global state object to store input type
 export const state = {
@@ -50,6 +51,12 @@ export function verdictColor(label) {
     return label.toLowerCase().includes("suspicious") ? "orange" : "red";
 }
 
+
+
 // Init setup on popup load
-setupLookupButton();
-setupCopyAllButton();
+
+document.addEventListener("DOMContentLoaded", () => {
+    setupLookupButton();
+    setupCopyAllButton();
+    setupOpenAllLinksButton();
+});

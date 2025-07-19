@@ -46,7 +46,7 @@ export async function lookupVirusTotal(hash, container, key = vtKey) {
 <p><strong>File Name:</strong> ${fileName}</p>
 <p><strong>Detections:</strong> ${stats.malicious} / ${Object.keys(results).length}</p>
 ${malicious.length > 0 ? `<p><strong>Malicious Vendors:</strong></p><ul>${malicious.join("")}</ul>` : ""}
-<p><a href="https://www.virustotal.com/gui/file/${hash}" target="_blank">View on VirusTotal</a></p>
+<p><a href="https://www.virustotal.com/gui/file/${hash}" target="_blank" class="external-link">View on VirusTotal</a></p>
 `.trim();
         } else {
             content.innerHTML = "<p>No report found for this hash.</p>";
@@ -100,7 +100,7 @@ ${vendors.map(([vendor, res]) => {
         }).join("\n")}
 </ul>` : ""}
 
-<p><a href="https://www.virustotal.com/gui/ip-address/${ip}/detection" target="_blank">View on VirusTotal</a></p>
+<p><a href="https://www.virustotal.com/gui/ip-address/${ip}/detection" target="_blank" class="external-link">View on VirusTotal</a></p>
 </div>
 `.trim();
     } catch (err) {
