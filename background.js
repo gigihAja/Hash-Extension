@@ -1,5 +1,6 @@
 import CryptoJS from "./crypto-wrapper.js";
-const corsProxy = "https://thingproxy.freeboard.io/fetch/";
+// const corsProxy = "https://thingproxy.freeboard.io/fetch/";
+const corsProxy = "https://corsproxy.io/?";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
@@ -106,8 +107,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                             }
                         });
 
+
+
+
                         const contentType = summaryRes.headers.get("content-type") || "";
                         const rawText = await summaryRes.text();
+                        console.log("[Hybrid Analysis Raw Response]", rawText);
                         if (!contentType.includes("application/json")) {
                             console.error("❌ Response is not JSON! Dumping raw text:");
                             console.log(rawText.slice(0, 1000));
@@ -205,6 +210,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                         "Accept": "application/json"
                     }
                 });
+
+                // const rawText = await res.text();
+                // console.log("[AbuseIPDB Raw Response]", rawText);
 
                 const data = await res.json();
                 if (!data || !data.data) {

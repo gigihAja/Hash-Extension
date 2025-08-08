@@ -21,7 +21,8 @@
         "https://www.virustotal.com/*",
         "https://otx.alienvault.com/*",
         "https://www.hybrid-analysis.com/*",
-        "https://thingproxy.freeboard.io/*"
+        "https://thingproxy.freeboard.io/*",
+        "https://api.codetabs.com/*"
     ],
     "background": {
         "service_worker": "background.js",
