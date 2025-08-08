@@ -1,6 +1,5 @@
 import CryptoJS from "./crypto-wrapper.js";
-// const corsProxy = "https://thingproxy.freeboard.io/fetch/";
-const corsProxy = "https://corsproxy.io/?";
+const corsProxy = "https://backend-proxy-hash-production.up.railway.app";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
@@ -17,13 +16,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
                     return;
                 }
 
-                const searchUrl = `${corsProxy}https://www.hybrid-analysis.com/api/v2/search/hash?hash=${hash}`;
-                const res = await fetch(searchUrl, {
-                    headers: {
-                        'api-key': decrypted,
-                        'User-Agent': 'Falcon Sandbox'
-                    }
-                });
+                // const searchUrl = `${corsProxy}https://www.hybrid-analysis.com/api/v2/search/hash?hash=${hash}`;
+                // const res = await fetch(searchUrl, {
+                //     headers: {
+                //         'api-key': decrypted,
+                //         'User-Agent': 'Falcon Sandbox'
+                //     }
+                const searchUrl = `${corsProxy}/ha/search?hash=${hash}`;
+                const res = await fetch(searchUrl);
 
                 const data = await res.json();
                 if (!data || !data.reports || (Array.isArray(data.reports) && data.reports.length === 0)) {
@@ -100,12 +100,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                     console.log(`[HA] 📄 Fetching summary for report ID: ${reportId}`);
                     try {
-                        const summaryRes = await fetch(`${corsProxy}https://www.hybrid-analysis.com/api/v2/report/${reportId}/summary`, {
-                            headers: {
-                                'api-key': decrypted,
-                                'User-Agent': 'Falcon Sandbox',
-                            }
-                        });
+                        // const summaryRes = await fetch(`${corsProxy}https://www.hybrid-analysis.com/api/v2/report/${reportId}/summary`, {
+                        //     headers: {
+                        //         'api-key': decrypted,
+                        //         'User-Agent': 'Falcon Sandbox',
+                        //     }
+                        // });
+                        const summaryRes = await fetch(`${corsProxy}/ha/summary/${reportId}`);
+
 
 
 
@@ -202,14 +204,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         (async () => {
             try {
                 const ip = request.ip;
-                const url = `${corsProxy}https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&verbose`;
+                // const url = `${corsProxy}https://api.abuseipdb.com/api/v2/check?ipAddress=${ip}&verbose`;
 
-                const res = await fetch(url, {
-                    headers: {
-                        "Key": request.apiKey,
-                        "Accept": "application/json"
-                    }
-                });
+                // const res = await fetch(url, {
+                //     headers: {
+                //         "Key": request.apiKey,
+                //         "Accept": "application/json"
+                //     }
+                // });
+
+                const url = `${corsProxy}/abuseipdb?ip=${ip}`;
+                const res = await fetch(url);
+
 
                 // const rawText = await res.text();
                 // console.log("[AbuseIPDB Raw Response]", rawText);
