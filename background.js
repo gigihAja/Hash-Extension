@@ -134,12 +134,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
                                 for (const relatedId of summary.related_id) {
                                     try {
-                                        const relatedRes = await fetch(`${corsProxy}https://www.hybrid-analysis.com/api/v2/report/${relatedId}/summary`, {
-                                            headers: {
-                                                'api-key': decrypted,
-                                                'User-Agent': 'Falcon Sandbox',
-                                            }
-                                        });
+                                        // const relatedRes = await fetch(`${corsProxy}https://www.hybrid-analysis.com/api/v2/report/${relatedId}/summary`, {
+                                        //     headers: {
+                                        //         'api-key': decrypted,
+                                        //         'User-Agent': 'Falcon Sandbox',
+                                        //     }
+                                        // });
+                                        const relatedRes = await fetch(`${corsProxy}/ha/summary/${relatedId}`);
+
 
                                         const contentType = relatedRes.headers.get("content-type") || "";
                                         const rawRelatedText = await relatedRes.text();

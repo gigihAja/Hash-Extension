@@ -67,7 +67,7 @@ export async function lookupAbuseIPDB(ip, container) {
 <p>Type: ${typeDisplay}</p>
 <p><span style="color:${confidenceColor}; font-weight:bold;">Confidence of Abuse: ${d.abuseConfidenceScore}%</span></p>
 <p>Reports Count: ${d.totalReports} Times</p>
-<p>Last Report: ${formattedDate}</p>
+<p>Domain Name: ${d.domain}</p>
 <p>Category: ${categories.join(', ') || '-'}</p>
 ${d.isWhitelisted ? `<p><strong>Note:</strong><span style="color: lightGreen;"> Whitelisted</p>` : ""}
 <p><a href="https://www.abuseipdb.com/check/${d.ipAddress}" target="_blank" class="external-link">View on AbuseIPDB</a></p>
