@@ -1,5 +1,5 @@
 import CryptoJS from "./crypto-wrapper.js";
-const corsProxy = "https://backend-proxy-hash-production.up.railway.app";
+const corsProxy = "https://backend-proxy-hash-3-production.up.railway.app";
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
